@@ -5,15 +5,18 @@
     "web3": "^4.6.0"
   },
   "scripts": {
-    "send-message-cross-chain-toc": "npx ts-node sendMessageToC.ts",
-    "send-message-cross-chain-fromc": "npx ts-node sendMessageFromC.ts",
-    "test": "jest"
+    "send-message-cross-chain": "npx ts-node sendMessage.ts",
+    "send-message-cross-chain-deployed": "npx ts-node sendMessageDeployed.ts",
+    "test": "jest",
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "jest": "^29.7.0",
-    "ts-jest": "^29.1.2"
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.4.3"
   },
   "name": "plugin-web3js-avalanche",
-  "version": "0.0.1"
+  "version": "0.0.12",
+  "main": "lib/index.js"
 }

@@ -6,15 +6,26 @@ type IContractInfo = {
     abi: any[],
 }
 
+const rpcs = {
+    "dispatch": "https://subnets.avax.network/dispatch/testnet/rpc",
+    "fuji-c": "https://api.avax-test.network/ext/bc/C/rpc",
+    "c": "http://127.0.0.1:9650/ext/bc/C/rpc",
+    "echo": "https://subnets.avax.network/echo/testnet/rpc"
+}
+
 export class Subnet extends Web3PluginBase {
     public pluginNamespace = "subnet";
     private web3InstanceRPC: Web3;
-    private web3Account;
-    private web3PrivateKey;
+    private web3Account: any;
+    private web3PrivateKey: string = "";
     private contractAddress: { [key: string]: IContractInfo } = {};
     public constructor(aliasNet: string = "C") {
         super();
-        const rpc = `http://127.0.0.1:9652/ext/bc/${aliasNet}/rpc`
+        let rpc;
+        if (rpcs[aliasNet.toLowerCase()])
+            rpc = rpcs[aliasNet.toLowerCase()];
+        else
+            rpc = `http://127.0.0.1:9652/ext/bc/${aliasNet}/rpc`
         this.web3InstanceRPC = new Web3(new Web3.providers.HttpProvider(rpc));
     }
 
@@ -149,7 +160,7 @@ export class Subnet extends Web3PluginBase {
         } catch (ex: any) {
             console.log("ERROR_SENDING_TRANSACTION");
         }
-        // console.log(receipt);
+        return receipt
     }
 
     public readMessage = async (contractKey: string, method: string, args: any[] = [], caller: `0x${string}` = "0x777c79841a5926FB631d4D581f6A2c5AF5fe7792") => {
@@ -180,11 +191,5 @@ export class Subnet extends Web3PluginBase {
         const message = await contract.methods.getBlockchainID().call();
         console.log(`BlockchainID ${receiver}: ${message}`)
         return message
-    }
-}
-
-declare module 'web3' {
-    interface Web3Context {
-        subnet: Subnet;
     }
 }
