@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "solc": "^0.8.18",
+    "web3": "^4.6.0"
+  },
+  "scripts": {
+    "send-message-cross-chain-toc": "npx ts-node sendMessageToC.ts",
+    "send-message-cross-chain-fromc": "npx ts-node sendMessageFromC.ts",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2"
+  }
+}
