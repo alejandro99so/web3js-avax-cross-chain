@@ -1,6 +1,6 @@
 import { Web3PluginBase } from "web3";
 import { Subnet } from "./subnet";
-import fs from "fs/promises"
+import { contracts } from "./constants";
 
 type IContract = {
     sender?: string;
@@ -26,9 +26,9 @@ export class CrossChain extends Web3PluginBase {
 
     public sendMessageCrossChain = async (message: string = "hello web3js community", contract: IContract = { sender: "", receiver: "", privateKeyOrigin: this.web3PrivateKeyGeneric, privateKeyDestination: this.web3PrivateKeyGeneric }, showTrx: boolean = false) => {
         if (!contract.sender || contract.sender == "")
-            contract.sender = await fs.readFile("contracts/sender.sol", "utf8")
+            contract.sender = contracts.sender;
         if (!contract.receiver || contract.receiver == "")
-            contract.receiver = await fs.readFile("contracts/receiver.sol", "utf8")
+            contract.receiver = contracts.receiver;
         let senderInstance = this.web3InstanceOriginSubnet;
         let receiverInstance = this.web3InstanceDestinationSubnet;
         const compiledSender = await senderInstance.compileSmartContract("SenderMessage", contract.sender)

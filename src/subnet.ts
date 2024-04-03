@@ -44,7 +44,6 @@ export class Subnet extends Web3PluginBase {
             if (!nameFunction && abi[i].type == "constructor") continue
             let estimate;
             try {
-                // console.log({ nameFunction, args: args[i] })
                 estimate = await _contractProxy.methods[nameFunction](...args[i]).estimateGas({
                     from: address,
                 });
@@ -83,7 +82,6 @@ export class Subnet extends Web3PluginBase {
 
     public deploySmartContract = async (abi: any[], bytecode: string, contractKey: string, privateKey: string = "") => {
         const web3 = this.web3InstanceRPC;
-        // process.env.PRIVATE_KEY
         let signer = this.web3Account;
         if (privateKey != "") {
             signer = web3.eth.accounts.privateKeyToAccount(privateKey);
@@ -104,6 +102,7 @@ export class Subnet extends Web3PluginBase {
             this.contractAddress[contractKey] = { address: deployedContract.options.address as `0x${string}`, abi };
             return deployedContract.options.address as `0x${string}`;
         } catch (ex) {
+            console.log({ ex })
             return
         }
     }
@@ -111,7 +110,6 @@ export class Subnet extends Web3PluginBase {
     public sendMessage = async (contractKey: string, method: string, args: any[] = [], privateKey: string = "") => {
         const web3 = this.web3InstanceRPC;
         let signer = this.web3Account;
-
         if (privateKey != "") {
             signer = web3.eth.accounts.privateKeyToAccount(privateKey);
             this.web3Account = signer;
@@ -124,9 +122,7 @@ export class Subnet extends Web3PluginBase {
             balance = await web3.eth.getBalance(address);
         } catch (ex: any) {
             console.log("error del balance");
-            // console.log({ error: ex.error });
         }
-        // console.log({ balance });
         let estimate;
         let web3Contract: any = new web3.eth.Contract(this.contractAddress[contractKey].abi, this.contractAddress[contractKey].address);
         try {
@@ -134,10 +130,8 @@ export class Subnet extends Web3PluginBase {
                 from: address,
             });
         } catch (e) {
-            // console.log(e);
             return "ERROR_ESTIMATING_GAS";
         }
-        // console.log({ estimate });
         if (Number(estimate) > Number(balance)) {
             return "BALANCE_IS_NOT_ENOUGH";
         }
