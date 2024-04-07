@@ -24,6 +24,8 @@ export class Subnet extends Web3PluginBase {
         let rpc;
         if (rpcs[aliasNet.toLowerCase()])
             rpc = rpcs[aliasNet.toLowerCase()];
+        else if (rpc.slice(-4) == "/rpc")
+            rpc = aliasNet
         else
             rpc = `http://127.0.0.1:9652/ext/bc/${aliasNet}/rpc`
         this.web3InstanceRPC = new Web3(new Web3.providers.HttpProvider(rpc));
@@ -56,12 +58,12 @@ export class Subnet extends Web3PluginBase {
         return functions
     }
 
-    public compileSmartContract = async (contractName: string, contact: string) => {
+    public compileSmartContract = async (contractName: string, contract: string) => {
         const input = {
             language: 'Solidity',
             sources: {
                 'main': {
-                    content: contact,
+                    content: contract,
                 },
             },
             settings: {
@@ -157,7 +159,7 @@ export class Subnet extends Web3PluginBase {
         return receipt
     }
 
-    public readMessage = async (contractKey: string, method: string, args: any[] = [], caller: `0x${string}` = "0x777c79841a5926FB631d4D581f6A2c5AF5fe7792") => {
+    public readMessage = async (contractKey: string, method: string, args: any[] = []) => {
         const web3 = this.web3InstanceRPC;
         const contract = new web3.eth.Contract(this.contractAddress[contractKey].abi, this.contractAddress[contractKey].address);
         const message = await contract.methods[method](...args).call();

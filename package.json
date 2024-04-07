@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "dotenv": "^16.4.5",
     "solc": "^0.8.18",
     "web3": "^4.6.0"
   },
@@ -17,6 +16,6 @@
     "typescript": "^5.4.3"
   },
   "name": "plugin-web3js-avalanche",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "main": "lib/index.js"
 }
