@@ -6,32 +6,69 @@ type IContractInfo = {
     abi: any[],
 }
 
-const rpcs = {
-    "dispatch": "https://subnets.avax.network/dispatch/testnet/rpc",
-    "fuji-c": "https://api.avax-test.network/ext/bc/C/rpc",
-    "c": "http://127.0.0.1:9650/ext/bc/C/rpc",
-    "echo": "https://subnets.avax.network/echo/testnet/rpc"
+
+type IContractReceive = {
+    abi?: any[];
+    address?: string;
+    key?: string
 }
 
-export class Subnet extends Web3PluginBase {
-    public pluginNamespace = "subnet";
+const rpcs = {
+    "fuji-c": "https://api.avax-test.network/ext/bc/C/rpc",
+    "dispatch": "https://subnets.avax.network/dispatch/testnet/rpc",
+    "echo": "https://subnets.avax.network/echo/testnet/rpc",
+    "local-c": "http://127.0.0.1:9650/ext/bc/C/rpc",
+    "sepolia": "https://ethereum-sepolia-rpc.publicnode.com",
+    "arbitrum": "https://arb1.arbitrum.io/rpc",
+    "arbitrumSepolia": "https://sepolia-rollup.arbitrum.io/rpc"
+}
+
+/**
+ * Class to initialize your contract instance quickly 😎.
+ * @param {string} rpc - It could be and RPC, alias subnet and more.
+ * 
+ * 🚨 Example: const myInstance = new QuickContract("fuji-c")🚨
+ * 
+ * You can type one of below keys of your own RPC.
+ * 
+ * 🔺 "fuji-c" -> RPC for Fuji C-Chain,
+ * 
+ * 🔺 "dispatch" -> RPC for Dispatch subnet,
+ * 
+ * 🔺 "echo" -> RPC for Echo subnet,
+ * 
+ * 🔺 "local-c" -> RPC for local C-Chain (created when you run a local subnet),
+ * 
+ * 🔺 "sepolia" -> RPC for sepolia testnet,
+ * 
+ * 🔺 "arbitrum" -> RPC for Arbitrum One,
+ * 
+ * 🔺 "arbitrumSepolia" -> RPC for Arbitrum Sepolia
+ * 
+ * 🔺 "https://api.avax-test.network/ext/bc/C/rpc" -> Custom RPC
+ * 
+ * 🔺 "subnetA" -> Alias name for my local subnetA running in localhost
+}
+ */
+export class QuickContract extends Web3PluginBase {
+    public pluginNamespace = "quickContract";
     private web3InstanceRPC: Web3;
     private web3Account: any;
     private web3PrivateKey: string = "";
     private contractAddress: { [key: string]: IContractInfo } = {};
-    public constructor(aliasNet: string = "C") {
+    public constructor(rpc: string = "C") {
         super();
-        let rpc;
-        if (rpcs[aliasNet.toLowerCase()])
-            rpc = rpcs[aliasNet.toLowerCase()];
-        else if (rpc.slice(-4) == "/rpc")
-            rpc = aliasNet
+        let _rpc;
+        if (rpcs[rpc.toLowerCase()])
+            _rpc = rpcs[rpc.toLowerCase()];
+        else if (_rpc.slice(-4) == "/rpc")
+            _rpc = rpc
         else
-            rpc = `http://127.0.0.1:9652/ext/bc/${aliasNet}/rpc`
-        this.web3InstanceRPC = new Web3(new Web3.providers.HttpProvider(rpc));
+            _rpc = `http://127.0.0.1:9652/ext/bc/${rpc}/rpc`
+        this.web3InstanceRPC = new Web3(new Web3.providers.HttpProvider(_rpc));
     }
 
-    public getSubnetState = async () => {
+    public getState = async () => {
         const blockNumber = Number(await this.web3InstanceRPC.eth.getBlockNumber());
         const blockTransactionCount = Number(await this.web3InstanceRPC.eth.getBlockTransactionCount(2));
         const chainId = Number(await this.web3InstanceRPC.eth.getChainId());
@@ -58,7 +95,7 @@ export class Subnet extends Web3PluginBase {
         return functions
     }
 
-    public compileSmartContract = async (contractName: string, contract: string) => {
+    public compile = async (contractName: string, contract: string) => {
         const input = {
             language: 'Solidity',
             sources: {
@@ -82,7 +119,7 @@ export class Subnet extends Web3PluginBase {
         };
     }
 
-    public deploySmartContract = async (abi: any[], bytecode: string, contractKey: string, privateKey: string = "") => {
+    public deploy = async (abi: any[], bytecode: string, contractKey: string, privateKey: string = "") => {
         const web3 = this.web3InstanceRPC;
         let signer = this.web3Account;
         if (privateKey != "") {
@@ -109,7 +146,24 @@ export class Subnet extends Web3PluginBase {
         }
     }
 
-    public sendMessage = async (contractKey: string, method: string, args: any[] = [], privateKey: string = "") => {
+    /**
+     * Method to write in smart contracts quickly 😎.
+     * @param {{ abi: any; address: string; key: string }} contractInfo - contractInfo Contains contract details where:
+     *        
+     * key is a specific key or identifier, you have one when you deploy locally a contract (optional).
+     * 
+     * abi is the contract's ABI (optional),
+     * 
+     * address is the contract's address (optional),
+     * 
+     * You have to set a key or you have to set abi and address, choose one.
+     * @param { string } method - Method is the name of the method.
+     * @param { any[] } args - Args is an array of inputs sending to method.
+     * @param { string } privateKey - PrivateKey is the PrivateKey with funds in this Blockchain
+     * 
+     * 🚨 Example: const setText = await myInstance.write({ abi, address }, "setText", ["Hello!"], process.env.PRIVATE_KEY) 🚨
+     */
+    public write = async (contractInfo: IContractReceive, method: string, args: any[] = [], privateKey: string = "") => {
         const web3 = this.web3InstanceRPC;
         let signer = this.web3Account;
         if (privateKey != "") {
@@ -118,18 +172,27 @@ export class Subnet extends Web3PluginBase {
             this.web3PrivateKey;
         }
         if (!signer) return "ACCOUNT_NOT_FOUND";
-        const { address } = signer;
+        const { address: userAddress } = signer;
         let balance;
         try {
-            balance = await web3.eth.getBalance(address);
+            balance = await web3.eth.getBalance(userAddress);
         } catch (ex: any) {
             console.log("error del balance");
         }
         let estimate;
-        let web3Contract: any = new web3.eth.Contract(this.contractAddress[contractKey].abi, this.contractAddress[contractKey].address);
+        let abi;
+        let address;
+        if (contractInfo.key) {
+            abi = this.contractAddress[contractInfo.key].abi;
+            address = this.contractAddress[contractInfo.key].address;
+        } else {
+            abi = contractInfo.abi;
+            address = contractInfo.address;
+        }
+        let web3Contract: any = new web3.eth.Contract(abi, address);
         try {
             estimate = await web3Contract.methods[method](...args).estimateGas({
-                from: address,
+                from: userAddress,
             });
         } catch (e) {
             return "ERROR_ESTIMATING_GAS";
@@ -138,8 +201,8 @@ export class Subnet extends Web3PluginBase {
             return "BALANCE_IS_NOT_ENOUGH";
         }
         const txObject = {
-            from: address,
-            to: this.contractAddress[contractKey].address,
+            from: userAddress,
+            to: address,
             gas: estimate,
             gasPrice: web3.utils.toWei("25", "gwei"),
             data: web3Contract.methods[method](...args).encodeABI(),
@@ -159,9 +222,18 @@ export class Subnet extends Web3PluginBase {
         return receipt
     }
 
-    public readMessage = async (contractKey: string, method: string, args: any[] = []) => {
+    public read = async (contractInfo: IContractReceive, method: string, args: any[] = []) => {
+        let abi;
+        let address;
+        if (contractInfo.key) {
+            abi = this.contractAddress[contractInfo.key].abi;
+            address = this.contractAddress[contractInfo.key].address;
+        } else {
+            abi = contractInfo.abi;
+            address = contractInfo.address;
+        }
         const web3 = this.web3InstanceRPC;
-        const contract = new web3.eth.Contract(this.contractAddress[contractKey].abi, this.contractAddress[contractKey].address);
+        const contract = new web3.eth.Contract(abi, address);
         const message = await contract.methods[method](...args).call();
         return message
     }

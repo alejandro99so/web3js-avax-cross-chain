@@ -1,2 +1,2 @@
 export { CrossChain } from './crossChain';
-export { Subnet } from './subnet';
+export { QuickContract } from './quickContract';

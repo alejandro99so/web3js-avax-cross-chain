@@ -1,5 +1,5 @@
 import { Web3PluginBase } from "web3";
-import { Subnet } from "./subnet";
+import { QuickContract } from "./quickContract";
 import { contracts } from "./constants";
 
 type IContract = {
@@ -13,15 +13,15 @@ export class CrossChain extends Web3PluginBase {
     public pluginNamespace = "crossChain";
     private originSubnet: string;
     private destinationSubnet: string;
-    private web3InstanceOriginSubnet: Subnet;
-    private web3InstanceDestinationSubnet: Subnet;
+    private web3InstanceOriginSubnet: QuickContract;
+    private web3InstanceDestinationSubnet: QuickContract;
     private web3PrivateKeyGeneric = "0x56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027";
     public constructor(originNet: string = "C", destinationNet: string = "C") {
         super();
         this.originSubnet = originNet;
         this.destinationSubnet = destinationNet;
-        this.web3InstanceOriginSubnet = new Subnet(originNet);
-        this.web3InstanceDestinationSubnet = new Subnet(destinationNet);
+        this.web3InstanceOriginSubnet = new QuickContract(originNet);
+        this.web3InstanceDestinationSubnet = new QuickContract(destinationNet);
     }
 
     public sendMessageCrossChain = async (message: string = "hello web3js community", contract: IContract = { sender: "", receiver: "", privateKeyOrigin: this.web3PrivateKeyGeneric, privateKeyDestination: this.web3PrivateKeyGeneric }, showTrx: boolean = false) => {
@@ -31,28 +31,28 @@ export class CrossChain extends Web3PluginBase {
             contract.receiver = contracts.receiver;
         let senderInstance = this.web3InstanceOriginSubnet;
         let receiverInstance = this.web3InstanceDestinationSubnet;
-        const compiledSender = await senderInstance.compileSmartContract("SenderMessage", contract.sender)
-        const compiledReceiver = await receiverInstance.compileSmartContract("ReceiverMessage", contract.receiver)
+        const compiledSender = await senderInstance.compile("SenderMessage", contract.sender)
+        const compiledReceiver = await receiverInstance.compile("ReceiverMessage", contract.receiver)
         const { abi: abiSender, bytecode: bytecodeSender } = compiledSender;
         const { abi: abiReceiver, bytecode: bytecodeReceiver } = compiledReceiver;
-        const addressSender = await senderInstance.deploySmartContract(abiSender, bytecodeSender, "sender", contract.privateKeyOrigin);
+        const addressSender = await senderInstance.deploy(abiSender, bytecodeSender, "sender", contract.privateKeyOrigin);
         if (!addressSender) {
             console.log("Error deploying Sender SmartContract")
             return
         }
-        const addressReceiver = await receiverInstance.deploySmartContract(abiReceiver, bytecodeReceiver, "receiver", contract.privateKeyDestination);
+        const addressReceiver = await receiverInstance.deploy(abiReceiver, bytecodeReceiver, "receiver", contract.privateKeyDestination);
         if (!addressReceiver) {
             console.log("Error deploying Receiver SmartContract")
             return
         }
-        const lastMessage_1 = await receiverInstance.readMessage("receiver", "lastMessage")
+        const lastMessage_1 = await receiverInstance.read({ key: "receiver" }, "lastMessage")
         console.log(`The value of lastMessage at the beginning in ${this.destinationSubnet} Chain is: \n\n'${lastMessage_1}'\n`)
         const blockchainIDCChain = await receiverInstance.getBlockchainId(this.destinationSubnet);
         console.log(`Sending message in ${this.originSubnet} Chain`)
-        const sender = await senderInstance.sendMessage("sender", "sendMessage", [addressReceiver, blockchainIDCChain, message]);
+        const sender = await senderInstance.write({ key: "sender" }, "sendMessage", [addressReceiver, blockchainIDCChain, message]);
         await delay(2000);
         console.log(`requesting again in ${this.destinationSubnet} Chain`)
-        const lastMessage_2 = await receiverInstance.readMessage("receiver", "lastMessage")
+        const lastMessage_2 = await receiverInstance.read({ key: "receiver" }, "lastMessage")
         console.log(`The value of lastMessage in ${this.destinationSubnet} Chain after sending a message from ${this.originSubnet} Chain is: \n\n'${lastMessage_2}'\n`)
         console.log(`Sender Contract: \n${addressSender}. \nReceiver Contract: \n${addressReceiver}`)
         if (showTrx)
