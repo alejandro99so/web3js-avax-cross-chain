@@ -1,23 +1,25 @@
 # Library to interact with Blockchains in general, subnets and Communication Cross-Chain Using Teleporter
 
-Subnet: This class allows us to interact with various types of blockchains, including subnets of Avalanche. Among the interactions, we have smart contract compilation, contract deployment, gas value of some functions, current network state, calling a function that updates a state variable, calling a read-only function in the contract, and more.
+QuickContract: This class allows us to interact with various types of blockchains, including subnets of Avalanche. Among the interactions, we have smart contract compilation, contract deployment, gas value of some functions, current network state, calling a function that updates a state variable, calling a read-only function in the contract, and more.
 
 CrossChain: This class is focused on cross-chain communication between two subnets of Avalanche.
 
-## Subnet:
+## QuickContract:
 
 First, we need to instantiate our Blockchain, in this case, we do it with the Subnet class.
 
 ```js
-const avaxInstance = new Subnet(originNet);
+import { QuickContract } from "plugin-web3js-avalanche";
+const avaxInstance = new QuickContract(originNet);
 ```
 
 Once we have our instance, we can call methods like `compileSmartContract`, which is used to compile our contracts. This method takes the name of the contract we want to compile as the first argument and the contract to compile as the second argument. Here's an example:
 
 ```js
+import { QuickContract } from "plugin-web3js-avalanche";
 import fs from "fs/promises";
 const contract = await fs.readFile("./myContractPath", "utf8");
-const avaxInstance = new Subnet(originNet);
+const avaxInstance = new QuickContract(originNet);
 const { abi, bytecode } = await avaxInstance.compileSmartContract(
     "HelloWorld",
     contract
@@ -27,9 +29,10 @@ const { abi, bytecode } = await avaxInstance.compileSmartContract(
 Once compiled, we have access to the ABI and bytecode. To deploy it, we must have access to a wallet with crypto on the network. In the case of an Avalanche subnet deployed locally, the private key provided in the Avalanche CLI documentation is used by default. An example of this is as follows:
 
 ```js
+import { QuickContract } from "plugin-web3js-avalanche";
 import fs from "fs/promises";
 const contract = await fs.readFile("./myContractPath", "utf8");
-const avaxInstance = new Subnet(originNet);
+const avaxInstance = new QuickContract(originNet);
 const { abi, bytecode } = await avaxInstance.compileSmartContract(
     "HelloWorld",
     contract
@@ -56,9 +59,10 @@ If an address is not received, it means there was an error during deployment.
 If we want to call a read function of the contract, we can do it as follows:
 
 ```js
+import { QuickContract } from "plugin-web3js-avalanche";
 import fs from "fs/promises";
 const contract = await fs.readFile("./myContractPath", "utf8");
-const avaxInstance = new Subnet(originNet);
+const avaxInstance = new QuickContract(originNet);
 const { abi, bytecode } = await avaxInstance.compileSmartContract(
     "HelloWorld",
     contract
@@ -87,9 +91,10 @@ const lastMessage = await avaxInstance.readMessage(
 If we want to call a write function of the contract, we can do it as follows:
 
 ```js
+import { QuickContract } from "plugin-web3js-avalanche";
 import fs from "fs/promises";
 const contract = await fs.readFile("./myContractPath", "utf8");
-const avaxInstance = new Subnet(originNet);
+const avaxInstance = new QuickContract(originNet);
 const { abi, bytecode } = await avaxInstance.compileSmartContract(
     "HelloWorld",
     contract
