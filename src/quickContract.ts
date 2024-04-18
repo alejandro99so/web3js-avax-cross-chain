@@ -56,12 +56,12 @@ export class QuickContract extends Web3PluginBase {
     private web3Account: any;
     private web3PrivateKey: string = "";
     private contractAddress: { [key: string]: IContractInfo } = {};
-    public constructor(rpc: string = "C") {
+    public constructor(rpc: string = "C", ext = false) {
         super();
         let _rpc;
         if (rpcs[rpc.toLowerCase()])
             _rpc = rpcs[rpc.toLowerCase()];
-        else if (_rpc.slice(-4) == "/rpc")
+        else if (rpc.slice(-4) == "/rpc" || ext)
             _rpc = rpc
         else
             _rpc = `http://127.0.0.1:9652/ext/bc/${rpc}/rpc`
@@ -119,7 +119,7 @@ export class QuickContract extends Web3PluginBase {
         };
     }
 
-    public deploy = async (abi: any[], bytecode: string, contractKey: string, privateKey: string = "") => {
+    public deploy = async (abi: any[], bytecode: string, contractKey: string, privateKey: string = "", args: any[] = []) => {
         const web3 = this.web3InstanceRPC;
         let signer = this.web3Account;
         if (privateKey != "") {
@@ -132,6 +132,7 @@ export class QuickContract extends Web3PluginBase {
         try {
             const deployTx = contract.deploy({
                 data: bytecode,
+                arguments: args,
             });
             const deployedContract = await deployTx
                 .send({
@@ -169,7 +170,7 @@ export class QuickContract extends Web3PluginBase {
         if (privateKey != "") {
             signer = web3.eth.accounts.privateKeyToAccount(privateKey);
             this.web3Account = signer;
-            this.web3PrivateKey;
+            this.web3PrivateKey = privateKey;
         }
         if (!signer) return "ACCOUNT_NOT_FOUND";
         const { address: userAddress } = signer;

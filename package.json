@@ -16,6 +16,6 @@
     "typescript": "^5.4.3"
   },
   "name": "plugin-web3js-avalanche",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "main": "lib/index.js"
 }

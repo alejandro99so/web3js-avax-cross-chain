@@ -50,6 +50,7 @@ export class CrossChain extends Web3PluginBase {
         const blockchainIDCChain = await receiverInstance.getBlockchainId(this.destinationSubnet);
         console.log(`Sending message in ${this.originSubnet} Chain`)
         const sender = await senderInstance.write({ key: "sender" }, "sendMessage", [addressReceiver, blockchainIDCChain, message]);
+        if (!sender || typeof sender == "string") return "ERROR_SENDING_MESSAGE";
         await delay(2000);
         console.log(`requesting again in ${this.destinationSubnet} Chain`)
         const lastMessage_2 = await receiverInstance.read({ key: "receiver" }, "lastMessage")
