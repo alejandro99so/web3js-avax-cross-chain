@@ -1,5 +1,5 @@
 import { Web3PluginBase, Web3 } from "web3";
-import solc from "solc";
+import * as solc from "solc";
 
 type IContractInfo = {
     address: `0x${string}`,

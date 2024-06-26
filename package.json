@@ -15,7 +15,11 @@
     "ts-jest": "^29.1.2",
     "typescript": "^5.4.3"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alejandro99so/web3js-avax-cross-chain.git"
+  },
   "name": "plugin-web3js-avalanche",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "main": "lib/index.js"
 }
